@@ -61,7 +61,7 @@ class App extends React.Component<Props, State> {
         if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
             PROXY = "https://cors-anywhere.herokuapp.com/";
         }
-        const BASE = `https://api.karasique.io/0/b`;
+        const BASE = `https://one.karasique.io/0/b`;
 
         const threads = (await axios.get(`${PROXY}${BASE}`)).data;
 
