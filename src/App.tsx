@@ -66,7 +66,7 @@ class App extends React.Component<Props, State> {
         const threads = (await axios.get(`${PROXY}${BASE}`)).data;
 
         const promisedPosts = threads
-            .slice(0, 19)
+            .slice(0, 29)
             .map((x: { id: string; }) =>
                 axios
                     .get(`${PROXY}${BASE}/${x.id}`)
