@@ -57,19 +57,14 @@ class App extends React.Component<Props, State> {
     }
 
     async componentDidMount() {
-        let PROXY: string = "";
-        if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
-            PROXY = "https://cors-anywhere.herokuapp.com/";
-        }
         const BASE = `https://one.karasique.io/0/b`;
 
-        const threads = (await axios.get(`${PROXY}${BASE}`)).data;
+        const threads = (await axios.get(BASE)).data;
 
         const promisedPosts = threads
-            .slice(0, 29)
             .map((x: { id: string; }) =>
                 axios
-                    .get(`${PROXY}${BASE}/${x.id}`)
+                    .get(`${BASE}/${x.id}`)
                     .then(
                         (v) => {
                             return {value: v.data, status: 1}
@@ -81,9 +76,14 @@ class App extends React.Component<Props, State> {
             );
 
         const files = (await Promise.all(promisedPosts))
-            .filter((x: any) => x.status === 1)
-            .flatMap((x: any) => x.value.posts.map((y: any) => y.files))
-            .flat();
+            .filter((x: any) => x.status === 1 && x.value.posts.length > 0)
+            .flatMap((x: any) => x.value.posts)
+            .filter(x =>
+                !x.content.includes("FAP") &&
+                !x.content.includes("ФАП") &&
+                !x.content.includes("ТРАП")
+            )
+            .flatMap((x: any) => x.files);
 
         const playlist = files
             .filter((x: any) => x.kind === "video")
@@ -100,6 +100,7 @@ class App extends React.Component<Props, State> {
             playlist: this.shuffle(playlist)
         })
     }
+
 
     render() {
         const {playlist, cursor} = this.state;
