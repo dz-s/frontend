@@ -2,10 +2,9 @@ import styled from "styled-components";
 
 const PlayerStyle = styled.div`
   position: relative;
-  // margin: 10vh auto;
   margin-left: auto;
   margin-right: auto;
-  margin-top: 10vh;
+  margin-top: 5vh;
 `;
 
 const PlayerMetaStyle = styled.div`
