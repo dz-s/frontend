@@ -125,6 +125,7 @@ class App extends React.Component<Props, State> {
                 <Controls
                     source={video.source}
                     playing={this.state.playing}
+                    looping={this.state.looping}
                     moveCursor={this.moveCursor.bind(this)}
                     toggleLoop={this.toggleLoop.bind(this)}
                 />

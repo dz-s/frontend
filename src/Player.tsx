@@ -61,29 +61,29 @@ class Player extends React.Component<Props, State> {
 
     render() {
         return (
-            <div>
-                <S.PlayerStyle>
-                    <video
-                        ref={this.ref}
-                        key={this.props.source}
-                        controls={true}
-                        autoPlay={this.state.autoplay}
-                        loop={this.props.looping}
-                        muted={false}
-                        preload={"auto"}
-                        onPlay={() => this.props.onPlay()}
-                        onPause={() => this.props.onPause()}
-                        onEnded={() => this.props.moveCursor(1)}
-                        poster={this.props.poster}
-                        style={{maxHeight: "70vh"}}
-                    >
-                        <source src={this.props.source}/>
-                    </video>
-                </S.PlayerStyle>
+            <S.PlayerStyle>
+                <video
+                    playsInline={true}
+                    ref={this.ref}
+                    key={this.props.source}
+                    controls={true}
+                    autoPlay={this.state.autoplay}
+                    loop={this.props.looping}
+                    muted={false}
+                    preload={"auto"}
+                    onPlay={() => this.props.onPlay()}
+                    onPause={() => this.props.onPause()}
+                    onEnded={() => this.props.moveCursor(1)}
+                    onError={() => this.props.moveCursor(1)}
+                    poster={this.props.poster}
+                    style={{maxHeight: "80vh", minHeight: "40vh", maxWidth: "90vw"}}
+                >
+                    <source src={this.props.source}/>
+                </video>
                 <S.PlayerMetaStyle>
                     {this.props.name}
                 </S.PlayerMetaStyle>
-            </div>
+            </S.PlayerStyle>
         )
     }
 }

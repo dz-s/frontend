@@ -1,10 +1,11 @@
 import styled from "styled-components";
 
 const PlayerStyle = styled.div`
-  height: 100%;
-  width: 100%;
-  
-  max-height: 70vh;
+  position: relative;
+  // margin: 10vh auto;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 10vh;
 `;
 
 const PlayerMetaStyle = styled.div`

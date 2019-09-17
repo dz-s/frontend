@@ -6,6 +6,7 @@ const ControlsStyle = styled.div`
   position: relative;
   margin: 0;
   vertical-align: baseline;
+  clear:both;
 `;
 
 const ControlsTextStyle = styled.div`
