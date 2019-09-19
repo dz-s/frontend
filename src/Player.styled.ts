@@ -8,7 +8,7 @@ const PlayerStyle = styled.div`
 `;
 
 const PlayerMetaStyle = styled.div`
-  
+  font-family: "Roboto", sans-serif;
 `;
 
 export {PlayerStyle, PlayerMetaStyle};

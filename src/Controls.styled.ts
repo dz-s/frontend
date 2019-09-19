@@ -2,21 +2,17 @@ import styled from "styled-components";
 
 const ControlsStyle = styled.div`
   text-align: center;
-  padding: 1.5rem;
-  position: relative;
-  margin: 0;
-  vertical-align: baseline;
-  clear:both;
+  position: fixed;
+  bottom: 5vh;
+  left: 50%;
+  transform: translateX(-50%);
 `;
 
 const ControlsTextStyle = styled.div`
   color: hotpink;
-  font-size: 1.25rem;
   letter-spacing: 1px;
-  text-transform: uppercase;
   margin-right: 1rem;
   display: inline-block;
-  text-decoration: none;
 
   &:hover {
     color: orange;

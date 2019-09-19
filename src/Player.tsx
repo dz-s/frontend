@@ -76,7 +76,15 @@ class Player extends React.Component<Props, State> {
           onEnded={() => this.props.moveCursor(1)}
           onError={() => this.props.moveCursor(1)}
           poster={this.props.poster}
-          style={{maxHeight: "80vh", minHeight: "40vh", maxWidth: "90vw"}}
+          style={
+            {
+              maxHeight: "70vh",
+              minHeight: "40vh",
+              maxWidth: "90vw",
+              userSelect: "none",
+              borderRadius: "5px"
+            }
+          }
         >
           <source src={this.props.source}/>
         </video>
