@@ -44,7 +44,8 @@ class Controls extends React.Component<Props, State> {
         <br/>
 
         <S.ControlsTextStyle>
-          <span onClick={() => this.props.toggleLoop()}>
+          <span onClick={() => this.props.toggleLoop()}
+                style={{color: this.props.looping ? "hotpink" : "orange"}}>
             {this.props.looping ? "LOOPING" : "LOOP"}
           </span>
         </S.ControlsTextStyle>

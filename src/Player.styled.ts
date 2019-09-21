@@ -4,7 +4,7 @@ const PlayerStyle = styled.div`
   position: relative;
   margin-left: auto;
   margin-right: auto;
-  margin-top: 5vh;
+  margin-top: 2.5vh;
 `;
 
 const PlayerMetaStyle = styled.div`

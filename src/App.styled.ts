@@ -9,4 +9,11 @@ const AppStyle = styled.div`
   overflow: hidden;
 `;
 
-export {AppStyle};
+const AppTextStyle = styled.div`
+  display: inline-block;
+  color: hotpink;
+  letter-spacing: 1px;
+  margin-right: 1rem;
+`;
+
+export {AppStyle, AppTextStyle};

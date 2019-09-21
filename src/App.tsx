@@ -3,27 +3,46 @@ import * as S from "./App.styled";
 import Player from "./Player";
 import Controls from "./Controls";
 import axios from "axios";
-
-interface Props {
-}
+import Utils from "./utils";
 
 interface State {
   playing: boolean;
   looping: boolean;
 
+  board: string;
   playlist: Array<{ source: string; name: string; poster: string }>;
   cursor: number;
 }
 
-class App extends React.Component<Props, State> {
-  constructor(props: Props) {
+class App extends React.Component<any, State> {
+  constructor(props: any) {
     super(props);
 
     this.state = {
       playing: false,
       looping: true,
+      board: "b",
       playlist: [],
       cursor: 0
+    };
+
+    document.addEventListener("keydown", this.handleKeyDown.bind(this));
+  }
+
+  handleKeyDown(e: KeyboardEvent) {
+    if ((e.target! as HTMLElement).tagName === "VIDEO")
+      return;
+
+    switch (e.code) {
+      case "ArrowLeft":
+        this.moveCursor(-1);
+        break;
+      case "ArrowRight":
+        this.moveCursor(1);
+        break;
+      case "Space":
+        this.state.playing ? this.onPause() : this.onPlay();
+        break;
     }
   }
 
@@ -48,16 +67,8 @@ class App extends React.Component<Props, State> {
     this.setState({looping: !this.state.looping})
   }
 
-  shuffle<T>(arr: Array<T>): Array<T> {
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
-  }
-
-  async componentDidMount() {
-    const BASE = `https://one.karasique.io/0/b`;
+  async fetchPlaylist() {
+    const BASE = `https://one.karasique.io/0/${this.state.board}`;
 
     const threads = (await axios.get(BASE)).data;
 
@@ -85,7 +96,7 @@ class App extends React.Component<Props, State> {
       )
       .flatMap((x: any) => x.files);
 
-    const playlist = files
+    return files
       .filter((x: any) => x.kind === "video")
       .map((x: any) => {
           return {
@@ -95,23 +106,77 @@ class App extends React.Component<Props, State> {
           }
         }
       );
-
-    this.setState({
-      playlist: this.shuffle(playlist)
-    })
   }
 
+  async setPlaylist() {
+    this.setState({playlist: []});
+
+    const playlist = await this.fetchPlaylist();
+
+    this.setState({
+      playlist: Utils.shuffle(playlist),
+      cursor: 0
+    });
+  }
+
+  async componentDidUpdate(_: any, prevState: Readonly<State>) {
+    if (this.state.board === prevState.board)
+      return;
+
+    await this.setPlaylist();
+  }
+
+  async componentDidMount() {
+    await this.setPlaylist();
+  }
 
   render() {
     const {playlist, cursor} = this.state;
     const video = playlist[cursor];
-    if (!video)
+    if (!video) {
       return (
         "Loading..."
       );
+    }
 
     return (
       <S.AppStyle>
+        <S.AppTextStyle>
+          <span
+            onClick={() => this.setState({board: "b"})}
+            style={{color: this.state.board === "b" ? "hotpink" : "orange"}}
+          >
+            /b/
+          </span>
+        </S.AppTextStyle>
+
+        <S.AppTextStyle>
+          <span
+            onClick={() => this.setState({board: "mu"})}
+            style={{color: this.state.board === "mu" ? "hotpink" : "orange"}}
+          >
+            /mu/
+          </span>
+        </S.AppTextStyle>
+
+        <S.AppTextStyle>
+          <span
+            onClick={() => this.setState({board: "mov"})}
+            style={{color: this.state.board === "mov" ? "hotpink" : "orange"}}
+          >
+            /mov/
+          </span>
+        </S.AppTextStyle>
+
+        <S.AppTextStyle>
+          <span
+            onClick={() => this.setState({board: "vg"})}
+            style={{color: this.state.board === "vg" ? "hotpink" : "orange"}}
+          >
+            /vg/
+          </span>
+        </S.AppTextStyle>
+
         <Player
           source={video.source}
           name={video.name}
@@ -122,6 +187,7 @@ class App extends React.Component<Props, State> {
           onPause={this.onPause.bind(this)}
           moveCursor={this.moveCursor.bind(this)}
         />
+
         <Controls
           source={video.source}
           playing={this.state.playing}

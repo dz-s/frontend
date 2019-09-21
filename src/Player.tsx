@@ -16,6 +16,7 @@ interface Props {
 
 interface State {
   autoplay: boolean;
+  volume: number;
 }
 
 class Player extends React.Component<Props, State> {
@@ -27,36 +28,36 @@ class Player extends React.Component<Props, State> {
     this.ref = React.createRef<HTMLVideoElement>();
 
     this.state = {
-      autoplay: false
+      autoplay: false,
+      volume: 1.00,
     };
-
-    document.addEventListener("keydown", this.handleKeyDown.bind(this));
   }
 
-  handleKeyDown(e: KeyboardEvent) {
-    switch (e.code) {
-      case "ArrowLeft":
-        this.props.moveCursor(-1);
-        break;
-      case "ArrowRight":
-        this.props.moveCursor(1);
-        break;
-      case "Space":
-        this.props.playing ? this.props.onPause() : this.props.onPlay();
-        break;
-    }
+  getVideoNode(): HTMLVideoElement | null {
+    return this.ref.current;
   }
 
-  componentDidMount() {
+  onVolumeChange() {
+    const node = this.getVideoNode();
+    if (!node)
+      return;
+
+    if (node.muted)
+      this.setState({volume: 0});
+    else
+      this.setState({volume: node.volume})
   }
 
   componentDidUpdate() {
-    const node = this.ref.current;
-    if (node)
-      this.props.playing ? node.play() : node.pause();
-
     if (this.props.playing && !this.state.autoplay)
       this.setState({autoplay: true});
+
+    const node = this.getVideoNode();
+    if (!node)
+      return;
+
+    this.props.playing ? node.play() : node.pause();
+    node.volume = this.state.volume;
   }
 
   render() {
@@ -75,13 +76,13 @@ class Player extends React.Component<Props, State> {
           onPause={() => this.props.onPause()}
           onEnded={() => this.props.moveCursor(1)}
           onError={() => this.props.moveCursor(1)}
+          onVolumeChange={() => this.onVolumeChange()}
           poster={this.props.poster}
           style={
             {
               maxHeight: "70vh",
               minHeight: "40vh",
               maxWidth: "90vw",
-              userSelect: "none",
               borderRadius: "5px"
             }
           }
