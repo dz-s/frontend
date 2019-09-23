@@ -90,11 +90,11 @@ class Player extends React.Component<Props, State> {
           <source src={this.props.source}/>
         </video>
 
-        <S.PlayerMetaStyle>
+        <S.PlayerTextStyle>
           {this.props.name}
-        </S.PlayerMetaStyle>
+        </S.PlayerTextStyle>
 
-        <S.PlayerMetaStyle>
+        <S.PlayerTextStyle>
           <a
             href={`http://www.google.com/searchbyimage?image_url=${this.props.poster}`}
             target={"_blank"}
@@ -102,7 +102,7 @@ class Player extends React.Component<Props, State> {
           >
             {"🔎"}
           </a>
-        </S.PlayerMetaStyle>
+        </S.PlayerTextStyle>
       </S.PlayerStyle>
     )
   }

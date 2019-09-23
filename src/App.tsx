@@ -133,7 +133,7 @@ class App extends React.Component<any, State> {
   render() {
     const {playlist, cursor} = this.state;
     const video = playlist[cursor];
-    
+
     if (!video)
       return "Loading...";
 
@@ -142,13 +142,13 @@ class App extends React.Component<any, State> {
         {
           ["b", "mu", "mov", "vg"].map(board => {
               return (
-                <S.AppTextStyle>
-              <span
-                onClick={() => this.setState({board: board})}
-                style={{color: this.state.board === board ? "hotpink" : "orange"}}
-              >
-              {`/${board}/`}
-              </span>
+                <S.AppTextStyle key={board}>
+                  <span
+                    onClick={() => this.setState({board: board})}
+                    style={{color: this.state.board === board ? "hotpink" : "orange"}}
+                  >
+                  {`/${board}/`}
+                  </span>
                 </S.AppTextStyle>
               )
             }
