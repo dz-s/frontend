@@ -133,49 +133,27 @@ class App extends React.Component<any, State> {
   render() {
     const {playlist, cursor} = this.state;
     const video = playlist[cursor];
-    if (!video) {
-      return (
-        "Loading..."
-      );
-    }
+    
+    if (!video)
+      return "Loading...";
 
     return (
       <S.AppStyle>
-        <S.AppTextStyle>
-          <span
-            onClick={() => this.setState({board: "b"})}
-            style={{color: this.state.board === "b" ? "hotpink" : "orange"}}
-          >
-            /b/
-          </span>
-        </S.AppTextStyle>
-
-        <S.AppTextStyle>
-          <span
-            onClick={() => this.setState({board: "mu"})}
-            style={{color: this.state.board === "mu" ? "hotpink" : "orange"}}
-          >
-            /mu/
-          </span>
-        </S.AppTextStyle>
-
-        <S.AppTextStyle>
-          <span
-            onClick={() => this.setState({board: "mov"})}
-            style={{color: this.state.board === "mov" ? "hotpink" : "orange"}}
-          >
-            /mov/
-          </span>
-        </S.AppTextStyle>
-
-        <S.AppTextStyle>
-          <span
-            onClick={() => this.setState({board: "vg"})}
-            style={{color: this.state.board === "vg" ? "hotpink" : "orange"}}
-          >
-            /vg/
-          </span>
-        </S.AppTextStyle>
+        {
+          ["b", "mu", "mov", "vg"].map(board => {
+              return (
+                <S.AppTextStyle>
+              <span
+                onClick={() => this.setState({board: board})}
+                style={{color: this.state.board === board ? "hotpink" : "orange"}}
+              >
+              {`/${board}/`}
+              </span>
+                </S.AppTextStyle>
+              )
+            }
+          )
+        }
 
         <Player
           source={video.source}

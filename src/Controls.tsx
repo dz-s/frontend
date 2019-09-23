@@ -51,13 +51,17 @@ class Controls extends React.Component<Props, State> {
         </S.ControlsTextStyle>
 
         <S.ControlsTextStyle>
-          <a href={this.props.source} download target={"_blank"}
-             style={
-               {
-                 color: "hotpink",
-                 textDecoration: "none"
-               }
-             }>
+          <a
+            href={this.props.source}
+            download
+            target={"_blank"}
+            style={
+              {
+                color: "hotpink",
+                textDecoration: "none"
+              }
+            }
+          >
             DOWNLOAD
           </a>
         </S.ControlsTextStyle>
