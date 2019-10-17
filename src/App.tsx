@@ -10,7 +10,7 @@ interface State {
   looping: boolean;
 
   board: string;
-  playlist: Array<{ source: string; name: string; poster: string }>;
+  playlist: Array<{ source: string; name: string; poster: string; size: number }>;
   cursor: number;
 }
 
@@ -102,10 +102,16 @@ class App extends React.Component<any, State> {
           return {
             source: x.full,
             name: x.name,
-            poster: x.thumbnail
+            poster: x.thumbnail,
+            size: 0,
           }
         }
       );
+  }
+
+  async fetchVideoSize(url: string) {
+    const {headers} = await axios.head(url);
+    return headers["Content-Length"];
   }
 
   async setPlaylist() {
@@ -130,9 +136,10 @@ class App extends React.Component<any, State> {
     await this.setPlaylist();
   }
 
-  render() {
+  async render() {
     const {playlist, cursor} = this.state;
     const video = playlist[cursor];
+    video.size = await this.fetchVideoSize(video.source);
 
     if (!video)
       return "Loading...";
@@ -159,6 +166,7 @@ class App extends React.Component<any, State> {
           source={video.source}
           name={video.name}
           poster={video.poster}
+          size={video.size}
           playing={this.state.playing}
           looping={this.state.looping}
           onPlay={this.onPlay.bind(this)}

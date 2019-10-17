@@ -5,6 +5,7 @@ interface Props {
   source: string;
   name: string;
   poster: string;
+  size: number;
 
   playing: boolean;
   looping: boolean;
@@ -91,12 +92,12 @@ class Player extends React.Component<Props, State> {
         </video>
 
         <S.PlayerTextStyle>
-          {this.props.name}
+          {this.props.name} | {this.props.size}
         </S.PlayerTextStyle>
 
         <S.PlayerTextStyle>
           <a
-            href={`http://www.google.com/searchbyimage?image_url=${this.props.poster}`}
+            href={`https://google.com/searchbyimage?image_url=${this.props.poster}`}
             target={"_blank"}
             style={{textDecoration: "none"}}
           >
