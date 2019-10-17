@@ -1,7 +1,6 @@
 import React from "react";
 import * as S from "./Player.styled";
 import Media from "../entities/media";
-import axios from "axios";
 import Utils from "../utils";
 
 interface Props {
@@ -51,9 +50,14 @@ class Player extends React.Component<Props, State> {
       this.setState({volume: node.volume})
   }
 
-  componentDidUpdate() {
+  async componentDidUpdate(prevProps: Props) {
+    if (prevProps.media.source === this.props.media.source)
+      return;
+
     if (this.props.playing && !this.state.autoplay)
       this.setState({autoplay: true});
+
+    this.setState({size: await Utils.fetchSize(this.props.media.source)});
 
     const node = this.getVideoNode();
     if (!node)
@@ -64,9 +68,7 @@ class Player extends React.Component<Props, State> {
   }
 
   async componentDidMount() {
-    const {media} = this.props;
-    const {headers} = await axios.head(`https://cors-anywhere.herokuapp.com/${media.source}`);
-    this.setState({size: parseInt(headers["content-length"])});
+    this.setState({size: await Utils.fetchSize(this.props.media.source)});
   }
 
   render() {

@@ -1,3 +1,5 @@
+import axios from "axios";
+
 export default class {
   static shuffle<T>(arr: Array<T>): Array<T> {
     for (let i = arr.length - 1; i > 0; i--) {
@@ -5,6 +7,11 @@ export default class {
       [arr[i], arr[j]] = [arr[j], arr[i]];
     }
     return arr;
+  }
+
+  static async fetchSize(url: string): Promise<number> {
+    const {headers} = await axios.head(`https://cors-anywhere.herokuapp.com/${url}`);
+    return parseInt(headers["content-length"]);
   }
 
   static formatSize(KB: number): string {
