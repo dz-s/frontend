@@ -107,7 +107,7 @@ class Player extends React.Component<Props, State> {
 
         <S.PlayerTextStyle>
           <a
-            href={`https://google.com/searchbyimage?image_url=${this.props.media.poster}`}
+            href={`https://www.google.com/searchbyimage?image_url=${this.props.media.poster}`}
             target={"_blank"}
             style={{textDecoration: "none"}}
           >
