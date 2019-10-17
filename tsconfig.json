@@ -1,6 +1,8 @@
 {
   "compilerOptions": {
     "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Node",
     "outDir": "./build",
     "rootDir": "./src",
     "removeComments": true,
@@ -13,7 +15,7 @@
     "strictPropertyInitialization": true,
     "noImplicitThis": true,
     "alwaysStrict": true,
-    "noUnusedLocals": false,
+    "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
@@ -25,14 +27,12 @@
       "dom.iterable",
       "esnext"
     ],
-    "allowJs": true,
+    "allowJs": false,
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
-    "module": "esnext",
     "isolatedModules": true,
-    "jsx": "react",
-    "moduleResolution": "node"
+    "jsx": "react"
   },
   "include": [
     "src"

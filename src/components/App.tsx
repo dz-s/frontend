@@ -3,14 +3,15 @@ import * as S from "./App.styled";
 import Player from "./Player";
 import Controls from "./Controls";
 import axios from "axios";
-import Utils from "./utils";
+import Utils from "../utils";
+import Media from "../entities/media";
 
 interface State {
   playing: boolean;
   looping: boolean;
 
   board: string;
-  playlist: Array<{ source: string; name: string; poster: string; size: number }>;
+  playlist: Array<Media>;
   cursor: number;
 }
 
@@ -27,6 +28,14 @@ class App extends React.Component<any, State> {
     };
 
     document.addEventListener("keydown", this.handleKeyDown.bind(this));
+
+    this.fetchPlaylist()
+      .then(playlist => {
+        this.setState({
+          playlist: Utils.shuffle(Utils.shuffle(playlist)),
+          cursor: 0
+        });
+      });
   }
 
   handleKeyDown(e: KeyboardEvent) {
@@ -89,57 +98,23 @@ class App extends React.Component<any, State> {
     const files = (await Promise.all(promisedPosts))
       .filter((x: any) => x.status === 1 && x.value.posts.length > 0)
       .flatMap((x: any) => x.value.posts)
-      .filter(x =>
-        !x.content.includes("FAP") &&
-        !x.content.includes("ФАП") &&
-        !x.content.includes("ТРАП")
-      )
-      .flatMap((x: any) => x.files);
+      .flatMap((x: any) => x.files)
+      .filter((x: any) => x.kind === "video");
 
-    return files
-      .filter((x: any) => x.kind === "video")
-      .map((x: any) => {
-          return {
-            source: x.full,
-            name: x.name,
-            poster: x.thumbnail,
-            size: 0,
-          }
+    return files.map((x: any) => {
+        return {
+          source: x.full,
+          name: x.name,
+          poster: x.thumbnail,
+          size: 0,
         }
-      );
+      }
+    );
   }
 
-  async fetchVideoSize(url: string) {
-    const {headers} = await axios.head(url);
-    return headers["Content-Length"];
-  }
-
-  async setPlaylist() {
-    this.setState({playlist: []});
-
-    const playlist = await this.fetchPlaylist();
-
-    this.setState({
-      playlist: Utils.shuffle(playlist),
-      cursor: 0
-    });
-  }
-
-  async componentDidUpdate(_: any, prevState: Readonly<State>) {
-    if (this.state.board === prevState.board)
-      return;
-
-    await this.setPlaylist();
-  }
-
-  async componentDidMount() {
-    await this.setPlaylist();
-  }
-
-  async render() {
+  render() {
     const {playlist, cursor} = this.state;
     const video = playlist[cursor];
-    video.size = await this.fetchVideoSize(video.source);
 
     if (!video)
       return "Loading...";
@@ -163,10 +138,7 @@ class App extends React.Component<any, State> {
         }
 
         <Player
-          source={video.source}
-          name={video.name}
-          poster={video.poster}
-          size={video.size}
+          media={video}
           playing={this.state.playing}
           looping={this.state.looping}
           onPlay={this.onPlay.bind(this)}
@@ -185,6 +157,5 @@ class App extends React.Component<any, State> {
     );
   }
 }
-
 
 export default App;

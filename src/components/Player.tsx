@@ -1,11 +1,11 @@
 import React from "react";
 import * as S from "./Player.styled";
+import Media from "../entities/media";
+import axios from "axios";
+import Utils from "../utils";
 
 interface Props {
-  source: string;
-  name: string;
-  poster: string;
-  size: number;
+  media: Media;
 
   playing: boolean;
   looping: boolean;
@@ -18,6 +18,7 @@ interface Props {
 interface State {
   autoplay: boolean;
   volume: number;
+  size: number;
 }
 
 class Player extends React.Component<Props, State> {
@@ -31,6 +32,7 @@ class Player extends React.Component<Props, State> {
     this.state = {
       autoplay: false,
       volume: 1.00,
+      size: 0
     };
   }
 
@@ -61,13 +63,19 @@ class Player extends React.Component<Props, State> {
     node.volume = this.state.volume;
   }
 
+  async componentDidMount() {
+    const {media} = this.props;
+    const {headers} = await axios.head(`https://cors-anywhere.herokuapp.com/${media.source}`);
+    this.setState({size: parseInt(headers["content-length"])});
+  }
+
   render() {
     return (
       <S.PlayerStyle>
         <video
           playsInline={true}
           ref={this.ref}
-          key={this.props.source}
+          key={this.props.media.source}
           controls={true}
           autoPlay={this.state.autoplay}
           loop={this.props.looping}
@@ -78,7 +86,7 @@ class Player extends React.Component<Props, State> {
           onEnded={() => this.props.moveCursor(1)}
           onError={() => this.props.moveCursor(1)}
           onVolumeChange={() => this.onVolumeChange()}
-          poster={this.props.poster}
+          poster={this.props.media.poster}
           style={
             {
               maxHeight: "70vh",
@@ -88,20 +96,20 @@ class Player extends React.Component<Props, State> {
             }
           }
         >
-          <source src={this.props.source}/>
+          <source src={this.props.media.source}/>
         </video>
 
         <S.PlayerTextStyle>
-          {this.props.name} | {this.props.size}
+          {this.props.media.name} | {Utils.formatSize(this.state.size)}
         </S.PlayerTextStyle>
 
         <S.PlayerTextStyle>
           <a
-            href={`https://google.com/searchbyimage?image_url=${this.props.poster}`}
+            href={`https://google.com/searchbyimage?image_url=${this.props.media.poster}`}
             target={"_blank"}
             style={{textDecoration: "none"}}
           >
-            {"🔎"}
+            🔎
           </a>
         </S.PlayerTextStyle>
       </S.PlayerStyle>
