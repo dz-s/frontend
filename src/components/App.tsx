@@ -13,6 +13,7 @@ interface State {
   board: string;
   playlist: Array<Media>;
   cursor: number;
+  isIOS: boolean;
 }
 
 class App extends React.Component<any, State> {
@@ -24,15 +25,16 @@ class App extends React.Component<any, State> {
       looping: true,
       board: "b",
       playlist: [],
-      cursor: 0
+      cursor: 0,
+      isIOS: !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform)
     };
 
     document.addEventListener("keydown", this.handleKeyDown.bind(this));
 
-    this.fetchPlaylist()
+    this.fetchPlaylist(this.state.board)
       .then(playlist => {
         this.setState({
-          playlist: Utils.shuffle(Utils.shuffle(playlist)),
+          playlist: Utils.shuffle(playlist),
           cursor: 0
         });
       });
@@ -76,30 +78,33 @@ class App extends React.Component<any, State> {
     this.setState({looping: !this.state.looping})
   }
 
-  async fetchPlaylist() {
-    const BASE = `https://one.karasique.io/0/${this.state.board}`;
+  async fetchPlaylist(board: string) {
+    const BASE = `https://one.karasique.io/0/${board}`;
 
     const threads = (await axios.get(BASE)).data;
 
     const promisedPosts = threads
-      .map((x: { id: string; }) =>
+      .filter((thread: any) =>
+        ["ФАП", "АФГ", "ТРАП", "FAP"]
+          .every(x => !thread.content.includes(x))
+      )
+      .map((x: any) =>
         axios
           .get(`${BASE}/${x.id}`)
           .then(
-            (v) => {
-              return {value: v.data, status: 1}
-            },
-            (e) => {
-              return {e: e, status: 0}
-            }
+            v => ({value: v.data, status: true}),
+            e => ({e: e, status: false})
           )
       );
 
-    const files = (await Promise.all(promisedPosts))
-      .filter((x: any) => x.status === 1 && x.value.posts.length > 0)
+    let files = (await Promise.all(promisedPosts))
+      .filter((x: any) => x.status && x.value.posts.length)
       .flatMap((x: any) => x.value.posts)
       .flatMap((x: any) => x.files)
       .filter((x: any) => x.kind === "video");
+
+    if (this.state.isIOS)
+      files = files.filter((x: any) => x.full.endsWith("mp4"));
 
     return files.map((x: any) => {
         return {
@@ -110,6 +115,18 @@ class App extends React.Component<any, State> {
         }
       }
     );
+  }
+
+  async componentDidUpdate(_: any, prevState: State) {
+    if (prevState.board === this.state.board)
+      return;
+
+    this.setState({playlist: []});
+
+    this.setState({
+      playlist: Utils.shuffle(await this.fetchPlaylist(this.state.board)),
+      cursor: 0
+    });
   }
 
   render() {
