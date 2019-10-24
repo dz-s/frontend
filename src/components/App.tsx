@@ -1,9 +1,9 @@
 import React from "react";
+import axios from "axios";
+import shuffle from "@tinkoff/utils/array/shuffle";
 import * as S from "./App.styled";
 import Player from "./Player";
 import Controls from "./Controls";
-import axios from "axios";
-import Utils from "../utils";
 import Media from "../entities/media";
 
 interface State {
@@ -34,7 +34,7 @@ class App extends React.Component<any, State> {
     this.fetchPlaylist(this.state.board)
       .then(playlist => {
         this.setState({
-          playlist: Utils.shuffle(playlist),
+          playlist: playlist,
           cursor: 0
         });
       });
@@ -85,7 +85,7 @@ class App extends React.Component<any, State> {
 
     const promisedPosts = threads
       .filter((thread: any) =>
-        ["ФАП", "АФГ", "ТРАП", "FAP"]
+        ["ФАП", "АФГ", "FAP", "ТРАП", "TRAP"]
           .every(x => !thread.content.includes(x))
       )
       .map((x: any) =>
@@ -106,7 +106,7 @@ class App extends React.Component<any, State> {
     if (this.state.isIOS)
       files = files.filter((x: any) => x.full.endsWith("mp4"));
 
-    return files.map((x: any) => {
+    return shuffle(files.map((x: any) => {
         return {
           source: x.full,
           name: x.name,
@@ -114,7 +114,7 @@ class App extends React.Component<any, State> {
           size: 0,
         }
       }
-    );
+    ));
   }
 
   async componentDidUpdate(_: any, prevState: State) {
@@ -122,9 +122,8 @@ class App extends React.Component<any, State> {
       return;
 
     this.setState({playlist: []});
-
     this.setState({
-      playlist: Utils.shuffle(await this.fetchPlaylist(this.state.board)),
+      playlist: await this.fetchPlaylist(this.state.board),
       cursor: 0
     });
   }
