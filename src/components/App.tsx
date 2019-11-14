@@ -1,5 +1,4 @@
 import React from "react";
-import axios from "axios";
 import shuffle from "@tinkoff/utils/array/shuffle";
 import * as S from "./App.styled";
 import Player from "./Player";
@@ -79,27 +78,28 @@ class App extends React.Component<any, State> {
   }
 
   async fetchPlaylist(board: string) {
-    const BASE = `https://one.karasique.io/0/${board}`;
+    const BASE = `https://cors.x7.workers.dev/https://one.karasique.io/0/${board}`;
 
-    const threads = (await axios.get(BASE)).data;
+    const threads = await fetch(BASE)
+      .then(x => x.json())
+      .then(x => x.hasOwnProperty("error") ? [] : x);
 
-    const promisedPosts = threads
-      .filter((thread: any) =>
-        ["ФАП", "АФГ", "FAP", "ТРАП", "TRAP"]
-          .every(x => !thread.content.includes(x))
-      )
-      .map((x: any) =>
-        axios
-          .get(`${BASE}/${x.id}`)
-          .then(
-            v => ({value: v.data, status: true}),
-            e => ({e: e, status: false})
-          )
-      );
+    const replies = await Promise.all(
+      threads
+        .filter((thread: any) =>
+          ["ФАП", "АФГ", "FAP", "ТРАП", "TRAP"]
+            .every(x => !thread.content.includes(x))
+        )
+        .map((thread: any) =>
+          fetch(`${BASE}/${thread.id}`)
+            .then(x => x.json())
+            .then(x => x.hasOwnProperty("error") ? {posts: []} : x)
+        )
+    );
 
-    let files = (await Promise.all(promisedPosts))
-      .filter((x: any) => x.status && x.value.posts.length)
-      .flatMap((x: any) => x.value.posts)
+    let files = replies
+      .filter((x: any) => x.posts.length)
+      .flatMap((x: any) => x.posts)
       .flatMap((x: any) => x.files)
       .filter((x: any) => x.kind === "video");
 
