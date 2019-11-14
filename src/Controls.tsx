@@ -1,5 +1,6 @@
 import React from "react";
-import * as S from "./Controls.styled";
+import { ControlButtonStyle, ControlsStyle, DelimiterStyle, PlayBackStyle } from "./Controls.styled";
+import { MdFileDownload } from "react-icons/md";
 
 interface Props {
   source: string;
@@ -10,7 +11,7 @@ interface Props {
   toggleLoop: Function;
 }
 
-interface State {}
+interface State { }
 
 class Controls extends React.Component<Props, State> {
   constructor(props: Props) {
@@ -21,30 +22,30 @@ class Controls extends React.Component<Props, State> {
 
   render() {
     return (
-      <S.ControlsStyle>
-        <S.ControlsTextStyle>
+      <ControlsStyle>
+      <PlayBackStyle>
+        <ControlButtonStyle>
           <span onClick={() => this.props.moveCursor(-1)}>{"◀"}</span>
-        </S.ControlsTextStyle>
+        </ControlButtonStyle>
 
-        <S.ControlsTextStyle>|</S.ControlsTextStyle>
+        <DelimiterStyle>|</DelimiterStyle>
 
-        <S.ControlsTextStyle>
+        <ControlButtonStyle>
           <span onClick={() => this.props.moveCursor(1)}>{"▶"}</span>
-        </S.ControlsTextStyle>
-
+        </ControlButtonStyle>
+        </PlayBackStyle>
         <br />
         <br />
 
-        <S.ControlsTextStyle>
+        <ControlButtonStyle>
           <span onClick={() => this.props.toggleLoop()}>
             {this.props.looping ? "LOOPING" : "LOOP"}
           </span>
-        </S.ControlsTextStyle>
-
+        </ControlButtonStyle>
         <br />
         <br />
 
-        <S.ControlsTextStyle>
+        <ControlButtonStyle>
           <a
             href={this.props.source}
             download
@@ -53,8 +54,9 @@ class Controls extends React.Component<Props, State> {
           >
             DOWNLOAD
           </a>
-        </S.ControlsTextStyle>
-      </S.ControlsStyle>
+          <MdFileDownload/>
+        </ControlButtonStyle>
+      </ControlsStyle>
     );
   }
 }
