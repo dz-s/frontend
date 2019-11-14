@@ -1,9 +1,8 @@
-import axios from "axios";
-
 export default class {
   static async fetchSize(url: string): Promise<number> {
-    const {headers} = await axios.head(`https://cors-anywhere.herokuapp.com/${url}`);
-    return parseInt(headers["content-length"]);
+    const response = await fetch(`https://cors.x7.workers.dev/${url}`, {method: "HEAD"});
+    const contentLength = response.headers.get("content-length");
+    return parseInt(contentLength!);
   }
 
   static formatSize(KB: number): string {
