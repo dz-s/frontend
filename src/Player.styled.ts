@@ -7,8 +7,6 @@ const PlayerStyle = styled.div`
   margin-top: 5vh;
 `;
 
-const PlayerMetaStyle = styled.div`
-  
-`;
+const PlayerMetaStyle = styled.div``;
 
-export {PlayerStyle, PlayerMetaStyle};
+export { PlayerStyle, PlayerMetaStyle };

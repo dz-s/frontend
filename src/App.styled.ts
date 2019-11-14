@@ -9,4 +9,4 @@ const AppStyle = styled.div`
   overflow: hidden;
 `;
 
-export {AppStyle};
+export { AppStyle };

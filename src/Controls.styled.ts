@@ -6,7 +6,7 @@ const ControlsStyle = styled.div`
   position: relative;
   margin: 0;
   vertical-align: baseline;
-  clear:both;
+  clear: both;
 `;
 
 const ControlsTextStyle = styled.div`
@@ -29,4 +29,4 @@ const ControlsTextStyle = styled.div`
   }
 `;
 
-export {ControlsStyle, ControlsTextStyle};
+export { ControlsStyle, ControlsTextStyle };
