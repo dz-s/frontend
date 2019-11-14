@@ -45,9 +45,9 @@ class Player extends React.Component<Props, State> {
       return;
 
     if (node.muted)
-      this.setState({volume: 0});
+      this.setState({ volume: 0 });
     else
-      this.setState({volume: node.volume})
+      this.setState({ volume: node.volume })
   }
 
   async componentDidUpdate(prevProps: Props) {
@@ -55,9 +55,9 @@ class Player extends React.Component<Props, State> {
       return;
 
     if (this.props.playing && !this.state.autoplay)
-      this.setState({autoplay: true});
+      this.setState({ autoplay: true });
 
-    this.setState({size: await Utils.fetchSize(this.props.media.source)});
+    this.setState({ size: await Utils.fetchSize(this.props.media.source) });
 
     const node = this.getVideoNode();
     if (!node)
@@ -68,7 +68,7 @@ class Player extends React.Component<Props, State> {
   }
 
   async componentDidMount() {
-    this.setState({size: await Utils.fetchSize(this.props.media.source)});
+    this.setState({ size: await Utils.fetchSize(this.props.media.source) });
   }
 
   render() {
@@ -98,7 +98,7 @@ class Player extends React.Component<Props, State> {
             }
           }
         >
-          <source src={this.props.media.source}/>
+          <source src={this.props.media.source} />
         </video>
 
         <S.PlayerTextStyle>
@@ -109,7 +109,7 @@ class Player extends React.Component<Props, State> {
           <a
             href={`https://www.google.com/searchbyimage?image_url=${this.props.media.poster}`}
             target={"_blank"}
-            style={{textDecoration: "none"}}
+            style={{ textDecoration: "none" }}
           >
             🔎
           </a>

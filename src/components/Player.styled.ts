@@ -11,4 +11,4 @@ const PlayerTextStyle = styled.div`
   font-family: "Roboto", sans-serif;
 `;
 
-export {PlayerStyle, PlayerTextStyle};
+export { PlayerStyle, PlayerTextStyle };

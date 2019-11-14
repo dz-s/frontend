@@ -1,5 +1,7 @@
 import React from "react";
-import * as S from "./Controls.styled";
+import { ControlsStyle, ControlButtonStyle, DelimiterStyle, PlayBackStyle } from "./Controls.styled";
+import { MdFileDownload } from "react-icons/md";
+
 
 
 interface Props {
@@ -23,34 +25,35 @@ class Controls extends React.Component<Props, State> {
 
   render() {
     return (
-      <S.ControlsStyle>
-        <S.ControlsTextStyle>
-                    <span onClick={() => this.props.moveCursor(-1)}>
-                    {"◀"}
-                    </span>
-        </S.ControlsTextStyle>
+      <ControlsStyle>
+        <PlayBackStyle>
+          <ControlButtonStyle>
+            <span onClick={() => this.props.moveCursor(-1)}>
+              {"◀"}
+            </span>
+          </ControlButtonStyle>
 
-        <S.ControlsTextStyle>
-          |
-        </S.ControlsTextStyle>
+          <DelimiterStyle>
+            |
+        </DelimiterStyle>
 
-        <S.ControlsTextStyle>
-                    <span onClick={() => this.props.moveCursor(1)}>
-                    {"▶"}
-                    </span>
-        </S.ControlsTextStyle>
+          <ControlButtonStyle>
+            <span onClick={() => this.props.moveCursor(1)}>
+              {"▶"}
+            </span>
+          </ControlButtonStyle>
+        </PlayBackStyle>
+        <br />
+        <br />
 
-        <br/>
-        <br/>
-
-        <S.ControlsTextStyle>
+        <ControlButtonStyle>
           <span onClick={() => this.props.toggleLoop()}
-                style={{color: this.props.looping ? "hotpink" : "orange"}}>
+            style={{ color: this.props.looping ? "hotpink" : "orange" }}>
             {this.props.looping ? "LOOPING" : "LOOP"}
           </span>
-        </S.ControlsTextStyle>
+        </ControlButtonStyle>
 
-        <S.ControlsTextStyle>
+        <ControlButtonStyle>
           <a
             href={this.props.source}
             download
@@ -64,8 +67,9 @@ class Controls extends React.Component<Props, State> {
           >
             DOWNLOAD
           </a>
-        </S.ControlsTextStyle>
-      </S.ControlsStyle>
+          <MdFileDownload/>
+        </ControlButtonStyle>
+      </ControlsStyle>
     )
   }
 }
