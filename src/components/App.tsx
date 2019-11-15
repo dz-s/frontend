@@ -49,7 +49,7 @@ class App extends React.Component<any, State> {
     this.fetchThreads(this.state.board)
       .then(threads => {
         this.setState({threads: threads});
-        return this.continuousPreload()
+        return this.continuousPreload();
       });
   }
 
@@ -129,21 +129,15 @@ class App extends React.Component<any, State> {
     if (prevState.board === this.state.board)
       return;
 
-    this.setState({playlist: []});
     this.fetchThreads(this.state.board)
-      .then(async threads => {
-        if (threads.length === 0)
-          return;
-
-        const files = await this.fetchFiles(this.state.board, threads[0]);
-
+      .then(threads =>
         this.setState({
-          threads: shuffle(threads),
-          threadsCursor: 0,
-          playlist: files,
+          playlist: [],
           playlistCursor: 0,
+          threads: threads,
+          threadsCursor: 0,
         })
-      });
+      );
   }
 
   render() {
