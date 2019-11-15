@@ -3,15 +3,25 @@ import shuffle from "@tinkoff/utils/array/shuffle";
 import * as S from "./App.styled";
 import Player from "./Player";
 import Controls from "./Controls";
-import Media from "../entities/media";
+import File from "../entities/file";
+import Thread from "../entities/thread";
+
+const CORS = "https://cors.x7.workers.dev";
+const BASE = "https://one.karasique.io";
+const DEFAULT_BOARD = "b";
 
 interface State {
   playing: boolean;
   looping: boolean;
 
   board: string;
-  playlist: Array<Media>;
-  cursor: number;
+
+  threads: Array<Thread>;
+  threadsCursor: number;
+
+  playlist: Array<File>;
+  playlistCursor: number;
+
   isIOS: boolean;
 }
 
@@ -22,20 +32,24 @@ class App extends React.Component<any, State> {
     this.state = {
       playing: false,
       looping: true,
-      board: "b",
+
+      board: DEFAULT_BOARD,
+
+      threads: [],
+      threadsCursor: 0,
+
       playlist: [],
-      cursor: 0,
+      playlistCursor: 0,
+
       isIOS: !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform)
     };
 
     document.addEventListener("keydown", this.handleKeyDown.bind(this));
 
-    this.fetchPlaylist(this.state.board)
-      .then(playlist => {
-        this.setState({
-          playlist: playlist,
-          cursor: 0
-        });
+    this.fetchThreads(this.state.board)
+      .then(threads => {
+        this.setState({threads: threads});
+        return this.continuousPreload()
       });
   }
 
@@ -65,56 +79,50 @@ class App extends React.Component<any, State> {
   }
 
   moveCursor(delta: number) {
-    const cursor = this.state.cursor + delta;
+    const cursor = this.state.playlistCursor + delta;
 
     if (cursor < 0 || cursor >= this.state.playlist.length)
       return;
 
-    this.setState({cursor: cursor});
+    this.setState({playlistCursor: cursor});
   }
 
   toggleLoop() {
     this.setState({looping: !this.state.looping})
   }
 
-  async fetchPlaylist(board: string) {
-    const BASE = `https://cors.x7.workers.dev/https://one.karasique.io/0/${board}`;
-
-    const threads = await fetch(BASE)
+  async fetchThreads(board: string): Promise<Array<Thread>> {
+    return await fetch(`${CORS}/${BASE}/0/${board}`)
       .then(x => x.json())
-      .then(x => x.hasOwnProperty("error") ? [] : x);
+      .then(x => x.hasOwnProperty("error") ? [] : x)
+      .then(x => x.map((thread: any) => new Thread(thread.id)));
+  }
 
-    const replies = await Promise.all(
-      threads
-        .filter((thread: any) =>
-          ["ФАП", "АФГ", "FAP", "ТРАП", "TRAP"]
-            .every(x => !thread.content.includes(x))
-        )
-        .map((thread: any) =>
-          fetch(`${BASE}/${thread.id}`)
-            .then(x => x.json())
-            .then(x => x.hasOwnProperty("error") ? {posts: []} : x)
-        )
-    );
+  async fetchFiles(board: string, thread: Thread): Promise<Array<File>> {
+    const replies = await fetch(`${CORS}/${BASE}/0/${board}/${thread.id}`)
+      .then(x => x.json())
+      .then(x => x.hasOwnProperty("error") ? [] : x.posts);
 
-    let files = replies
-      .filter((x: any) => x.posts.length)
-      .flatMap((x: any) => x.posts)
-      .flatMap((x: any) => x.files)
-      .filter((x: any) => x.kind === "video");
+    return replies
+      .flatMap((post: any) => post.files.map((file: any) => new File(file.full, file.thumbnail, file.kind, file.name)))
+      .filter((file: File) => file.kind === "video")
+      .filter((file: File) => this.state.isIOS ? file.full.endsWith("mp4") : true);
+  }
 
-    if (this.state.isIOS)
-      files = files.filter((x: any) => x.full.endsWith("mp4"));
+  async continuousPreload() {
+    while (this.state.threadsCursor < this.state.threads.length) {
+      console.log(this.state.playlist.length);
 
-    return shuffle(files.map((x: any) => {
-        return {
-          source: x.full,
-          name: x.name,
-          poster: x.thumbnail,
-          size: 0,
-        }
-      }
-    ));
+      const thread = this.state.threads[this.state.threadsCursor];
+      const files = await this.fetchFiles(this.state.board, thread);
+
+      this.setState({
+        playlist: [...this.state.playlist, ...shuffle(files)],
+        threadsCursor: this.state.threadsCursor + 1
+      });
+
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
   }
 
   async componentDidUpdate(_: any, prevState: State) {
@@ -122,15 +130,25 @@ class App extends React.Component<any, State> {
       return;
 
     this.setState({playlist: []});
-    this.setState({
-      playlist: await this.fetchPlaylist(this.state.board),
-      cursor: 0
-    });
+    this.fetchThreads(this.state.board)
+      .then(async threads => {
+        if (threads.length === 0)
+          return;
+
+        const files = await this.fetchFiles(this.state.board, threads[0]);
+
+        this.setState({
+          threads: shuffle(threads),
+          threadsCursor: 0,
+          playlist: files,
+          playlistCursor: 0,
+        })
+      });
   }
 
   render() {
-    const {playlist, cursor} = this.state;
-    const video = playlist[cursor];
+    const {playlist, playlistCursor} = this.state;
+    const video = playlist[playlistCursor];
 
     if (!video)
       return "Loading...";
@@ -163,7 +181,7 @@ class App extends React.Component<any, State> {
         />
 
         <Controls
-          source={video.source}
+          source={video.full}
           playing={this.state.playing}
           looping={this.state.looping}
           moveCursor={this.moveCursor.bind(this)}

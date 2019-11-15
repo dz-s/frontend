@@ -1,10 +1,10 @@
 import React from "react";
 import * as S from "./Player.styled";
-import Media from "../entities/media";
+import File from "../entities/file";
 import Utils from "../utils";
 
 interface Props {
-  media: Media;
+  media: File;
 
   playing: boolean;
   looping: boolean;
@@ -51,13 +51,13 @@ class Player extends React.Component<Props, State> {
   }
 
   async componentDidUpdate(prevProps: Props) {
-    if (prevProps.media.source === this.props.media.source)
+    if (prevProps.media.full === this.props.media.full)
       return;
 
     if (this.props.playing && !this.state.autoplay)
       this.setState({autoplay: true});
 
-    this.setState({size: await Utils.fetchSize(this.props.media.source)});
+    this.setState({size: await Utils.fetchSize(this.props.media.full)});
 
     const node = this.getVideoNode();
     if (!node)
@@ -68,7 +68,7 @@ class Player extends React.Component<Props, State> {
   }
 
   async componentDidMount() {
-    this.setState({size: await Utils.fetchSize(this.props.media.source)});
+    this.setState({size: await Utils.fetchSize(this.props.media.full)});
   }
 
   render() {
@@ -77,7 +77,7 @@ class Player extends React.Component<Props, State> {
         <video
           playsInline={true}
           ref={this.ref}
-          key={this.props.media.source}
+          key={this.props.media.full}
           controls={true}
           autoPlay={this.state.autoplay}
           loop={this.props.looping}
@@ -88,7 +88,7 @@ class Player extends React.Component<Props, State> {
           onEnded={() => this.props.moveCursor(1)}
           onError={() => this.props.moveCursor(1)}
           onVolumeChange={() => this.onVolumeChange()}
-          poster={this.props.media.poster}
+          poster={this.props.media.thumbnail}
           style={
             {
               maxHeight: "70vh",
@@ -98,7 +98,7 @@ class Player extends React.Component<Props, State> {
             }
           }
         >
-          <source src={this.props.media.source}/>
+          <source src={this.props.media.full}/>
         </video>
 
         <S.PlayerTextStyle>
@@ -107,7 +107,7 @@ class Player extends React.Component<Props, State> {
 
         <S.PlayerTextStyle>
           <a
-            href={`https://www.google.com/searchbyimage?image_url=${this.props.media.poster}`}
+            href={`https://www.google.com/searchbyimage?image_url=${this.props.media.thumbnail}`}
             target={"_blank"}
             style={{textDecoration: "none"}}
           >
