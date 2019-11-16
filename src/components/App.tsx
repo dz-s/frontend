@@ -21,6 +21,7 @@ interface State {
 
   playlist: Array<File>;
   playlistCursor: number;
+  watched: number;
 
   isIOS: boolean;
 }
@@ -40,6 +41,7 @@ class App extends React.Component<any, State> {
 
       playlist: [],
       playlistCursor: 0,
+      watched: 1,
 
       isIOS: !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform)
     };
@@ -84,7 +86,12 @@ class App extends React.Component<any, State> {
     if (cursor < 0 || cursor >= this.state.playlist.length)
       return;
 
-    this.setState({playlistCursor: cursor});
+    this.setState({
+      playlistCursor: cursor,
+      watched: cursor >= this.state.watched ?
+        this.state.watched + 1 :
+        this.state.watched
+    });
   }
 
   toggleLoop() {
@@ -111,17 +118,18 @@ class App extends React.Component<any, State> {
 
   async continuousPreload() {
     while (this.state.threadsCursor < this.state.threads.length) {
-      console.log(this.state.playlist.length);
-
       const thread = this.state.threads[this.state.threadsCursor];
       const files = await this.fetchFiles(this.state.board, thread);
 
       this.setState({
-        playlist: [...this.state.playlist, ...shuffle(files)],
+        playlist: [
+          ...this.state.playlist.slice(0, this.state.watched),
+          ...shuffle([...this.state.playlist.slice(this.state.watched), ...files])
+        ],
         threadsCursor: this.state.threadsCursor + 1
       });
 
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 250));
     }
   }
 
