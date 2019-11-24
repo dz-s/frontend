@@ -1,10 +1,11 @@
 import React from "react";
-import shuffle from "@tinkoff/utils/array/shuffle";
 import * as S from "./App.styled";
 import Player from "./Player";
 import Controls from "./Controls";
 import Media from "../entities/media";
-
+import Loader from "./Loader"
+import { BOARDS } from "../config";
+import { fetchThreads } from "../api";
 interface State {
   playing: boolean;
   looping: boolean;
@@ -56,48 +57,32 @@ class App extends React.Component<any, State> {
     }
   }
 
-  onPlay() {
-    this.setState({playing: true});
+  onPlay = () => {
+    this.setState({ playing: true });
   }
 
-  onPause() {
-    this.setState({playing: false});
+  onPause = () => {
+    this.setState({ playing: false });
   }
 
-  moveCursor(delta: number) {
+  moveCursor = (delta: number) => {
     const cursor = this.state.cursor + delta;
 
     if (cursor < 0 || cursor >= this.state.playlist.length)
       return;
 
-    this.setState({cursor: cursor});
+    this.setState({ cursor: cursor });
   }
 
-  toggleLoop() {
-    this.setState({looping: !this.state.looping})
+  toggleLoop = () => {
+    this.setState({ looping: !this.state.looping })
   }
 
   async fetchPlaylist(board: string) {
-    const BASE = `https://cors.x7.workers.dev/https://one.karasique.io/0/${board}`;
 
-    const threads = await fetch(BASE)
-      .then(x => x.json())
-      .then(x => x.hasOwnProperty("error") ? [] : x);
+    const threads = await fetchThreads(board)
 
-    const replies = await Promise.all(
-      threads
-        .filter((thread: any) =>
-          ["ФАП", "АФГ", "FAP", "ТРАП", "TRAP"]
-            .every(x => !thread.content.includes(x))
-        )
-        .map((thread: any) =>
-          fetch(`${BASE}/${thread.id}`)
-            .then(x => x.json())
-            .then(x => x.hasOwnProperty("error") ? {posts: []} : x)
-        )
-    );
-
-    let files = replies
+    let files = threads
       .filter((x: any) => x.posts.length)
       .flatMap((x: any) => x.posts)
       .flatMap((x: any) => x.files)
@@ -106,22 +91,22 @@ class App extends React.Component<any, State> {
     if (this.state.isIOS)
       files = files.filter((x: any) => x.full.endsWith("mp4"));
 
-    return shuffle(files.map((x: any) => {
-        return {
-          source: x.full,
-          name: x.name,
-          poster: x.thumbnail,
-          size: 0,
-        }
+    return files.map((x: any) => {
+      return {
+        source: x.full,
+        name: x.name,
+        poster: x.thumbnail,
+        size: 0,
       }
-    ));
+    }
+    );
   }
 
   async componentDidUpdate(_: any, prevState: State) {
     if (prevState.board === this.state.board)
       return;
 
-    this.setState({playlist: []});
+    this.setState({ playlist: [] });
     this.setState({
       playlist: await this.fetchPlaylist(this.state.board),
       cursor: 0
@@ -129,46 +114,47 @@ class App extends React.Component<any, State> {
   }
 
   render() {
-    const {playlist, cursor} = this.state;
+    const { playlist, cursor, playing, looping, board: stateBoard } = this.state;
     const video = playlist[cursor];
 
     if (!video)
-      return "Loading...";
+      return <Loader />;
 
     return (
       <S.AppStyle>
         {
-          ["b", "mu", "mov", "vg"].map(board => {
-              return (
-                <S.AppTextStyle key={board}>
-                  <span
-                    onClick={() => this.setState({board: board})}
-                    style={{color: this.state.board === board ? "hotpink" : "orange"}}
-                  >
+          BOARDS.map(board => {
+            return (
+              <S.AppTextStyle key={board}>
+                <span
+                  onClick={() => this.setState({ board: board })}
+                  style={{ color: stateBoard === board ? "hotpink" : "orange" }}
+                >
                   {`/${board}/`}
-                  </span>
-                </S.AppTextStyle>
-              )
-            }
+                </span>
+              </S.AppTextStyle>
+            )
+          }
           )
         }
 
         <Player
           media={video}
-          playing={this.state.playing}
-          looping={this.state.looping}
-          onPlay={this.onPlay.bind(this)}
-          onPause={this.onPause.bind(this)}
-          moveCursor={this.moveCursor.bind(this)}
+          playing={playing}
+          looping={looping}
+          onPlay={this.onPlay}
+          onPause={this.onPause}
+          moveCursor={this.moveCursor}
         />
 
         <Controls
           source={video.source}
-          playing={this.state.playing}
-          looping={this.state.looping}
-          moveCursor={this.moveCursor.bind(this)}
-          toggleLoop={this.toggleLoop.bind(this)}
+          playing={playing}
+          looping={looping}
+          moveCursor={this.moveCursor}
+          toggleLoop={this.toggleLoop}
         />
+
       </S.AppStyle>
     );
   }
