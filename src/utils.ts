@@ -1,6 +1,8 @@
+import { CORS_BASE } from "./config";
+
 export default class {
   static async fetchSize(url: string): Promise<number> {
-    const response = await fetch(`https://cors.x7.workers.dev/${url}`, {method: "HEAD"});
+    const response = await fetch(`${CORS_BASE}/${url}`, { method: "HEAD" });
     const contentLength = response.headers.get("content-length");
     return parseInt(contentLength!);
   }

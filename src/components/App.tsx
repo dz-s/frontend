@@ -1,22 +1,17 @@
 import React from "react";
-import shuffle from "@tinkoff/utils/array/shuffle";
 import * as S from "./App.styled";
 import Player from "./Player";
 import Controls from "./Controls";
-import File from "../entities/file";
-import Thread from "../entities/thread";
-
-const CORS = "https://cors.x7.workers.dev";
-const BASE = "https://one.karasique.io";
-const DEFAULT_BOARD = "b";
-
+import Loader from "./Loader"
+import { BOARDS } from "../config";
+import { fetchThreads } from "../api";
 interface State {
   playing: boolean;
   looping: boolean;
 
   board: string;
 
-  threads: Array<Thread>;
+  threads: Array<any>;
   threadsCursor: number;
 
   playlist: Array<File>;
@@ -34,7 +29,7 @@ class App extends React.Component<any, State> {
       playing: false,
       looping: true,
 
-      board: DEFAULT_BOARD,
+      board: BOARDS[0],
 
       threads: [],
       threadsCursor: 0,
@@ -47,12 +42,6 @@ class App extends React.Component<any, State> {
     };
 
     document.addEventListener("keydown", this.handleKeyDown.bind(this));
-
-    this.fetchThreads(this.state.board)
-      .then(threads => {
-        this.setState({threads: threads});
-        return this.continuousPreload();
-      });
   }
 
   handleKeyDown(e: KeyboardEvent) {
@@ -72,123 +61,105 @@ class App extends React.Component<any, State> {
     }
   }
 
-  onPlay() {
-    this.setState({playing: true});
+  onPlay = () => {
+    this.setState({ playing: true });
   }
 
-  onPause() {
-    this.setState({playing: false});
+  onPause = () => {
+    this.setState({ playing: false });
   }
 
-  moveCursor(delta: number) {
-    const cursor = this.state.playlistCursor + delta;
+  moveCursor = (delta: number) => {
+    const { cursor: currCursor, playlist } = this.state;
+    const cursor = currCursor + delta;
 
-    if (cursor < 0 || cursor >= this.state.playlist.length)
+    if (cursor < 0 || cursor >= playlist.length)
       return;
 
-    this.setState({
-      playlistCursor: cursor,
-      watched: cursor >= this.state.watched ?
-        this.state.watched + 1 :
-        this.state.watched
-    });
+    this.setState({ cursor });
   }
 
-  toggleLoop() {
-    this.setState({looping: !this.state.looping})
+  toggleLoop = () => {
+    this.setState({ looping: !this.state.looping })
   }
 
-  async fetchThreads(board: string): Promise<Array<Thread>> {
-    return await fetch(`${CORS}/${BASE}/0/${board}`)
-      .then(x => x.json())
-      .then(x => x.hasOwnProperty("error") ? [] : x)
-      .then(x => x.map((thread: any) => new Thread(thread.id)));
-  }
+  async fetchPlaylist(board: string) {
 
-  async fetchFiles(board: string, thread: Thread): Promise<Array<File>> {
-    const replies = await fetch(`${CORS}/${BASE}/0/${board}/${thread.id}`)
-      .then(x => x.json())
-      .then(x => x.hasOwnProperty("error") ? [] : x.posts);
+    const threads = await fetchThreads(board)
 
-    return replies
-      .flatMap((post: any) => post.files.map((file: any) => new File(file.full, file.thumbnail, file.kind, file.name)))
-      .filter((file: File) => file.kind === "video")
-      .filter((file: File) => this.state.isIOS ? file.full.endsWith("mp4") : true);
-  }
+    let files = threads
+      .filter((x: any) => x.posts.length)
+      .flatMap((x: any) => x.posts)
+      .flatMap((x: any) => x.files)
+      .filter((x: any) => x.kind === "video");
 
-  async continuousPreload() {
-    while (this.state.threadsCursor < this.state.threads.length) {
-      const thread = this.state.threads[this.state.threadsCursor];
-      const files = await this.fetchFiles(this.state.board, thread);
+    if (this.state.isIOS)
+      files = files.filter((x: any) => x.full.endsWith("mp4"));
 
-      this.setState({
-        playlist: [
-          ...this.state.playlist.slice(0, this.state.watched),
-          ...shuffle([...this.state.playlist.slice(this.state.watched), ...files])
-        ],
-        threadsCursor: this.state.threadsCursor + 1
-      });
-
-      await new Promise(resolve => setTimeout(resolve, 250));
+    return files.map((x: any) => {
+      return {
+        source: x.full,
+        name: x.name,
+        poster: x.thumbnail,
+        size: 0,
+      }
     }
+    );
   }
 
   async componentDidUpdate(_: any, prevState: State) {
     if (prevState.board === this.state.board)
       return;
 
-    this.fetchThreads(this.state.board)
-      .then(threads =>
-        this.setState({
-          playlist: [],
-          playlistCursor: 0,
-          threads: threads,
-          threadsCursor: 0,
-        })
-      );
+    this.setState({ playlist: [] });
+    this.setState({
+      playlist: await this.fetchPlaylist(this.state.board),
+      cursor: 0
+    });
   }
 
   render() {
-    const {playlist, playlistCursor} = this.state;
-    const video = playlist[playlistCursor];
+    const { playlist, cursor, playing, looping, board: stateBoard } = this.state;
+    const video = playlist[cursor];
 
     if (!video)
-      return "Loading...";
+      return <Loader />;
 
     return (
       <S.AppStyle>
         {
-          ["b", "mu", "mov", "vg"].map(board => {
-              return (
-                <S.AppTextStyle key={board}>
-                  <span
-                    onClick={() => this.setState({board: board})}
-                    style={{color: this.state.board === board ? "hotpink" : "orange"}}
-                  >
+          BOARDS.map(board => {
+            return (
+              <S.AppTextStyle key={board}>
+                <span
+                  onClick={() => this.setState({ board: board })}
+                  style={{ color: stateBoard === board ? "hotpink" : "orange" }}
+                >
                   {`/${board}/`}
-                  </span>
-                </S.AppTextStyle>
-              )
-            }
+                </span>
+              </S.AppTextStyle>
+            )
+          }
           )
         }
 
         <Player
           media={video}
-          playing={this.state.playing}
-          looping={this.state.looping}
-          onPlay={this.onPlay.bind(this)}
-          onPause={this.onPause.bind(this)}
-          moveCursor={this.moveCursor.bind(this)}
+          playing={playing}
+          looping={looping}
+          onPlay={this.onPlay}
+          onPause={this.onPause}
+          moveCursor={this.moveCursor}
         />
 
         <Controls
-          source={video.full}
-          playing={this.state.playing}
-          looping={this.state.looping}
-          moveCursor={this.moveCursor.bind(this)}
-          toggleLoop={this.toggleLoop.bind(this)}
+          source={video.source}
+          playing={playing}
+          looping={looping}
+          moveCursor={this.moveCursor}
+          toggleLoop={this.toggleLoop}
         />
+
       </S.AppStyle>
     );
   }
